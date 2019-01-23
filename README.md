@@ -3,7 +3,7 @@
 This is built on top of PDF embedded blockcerts, allow viewing of certificates in PDF format.
 
 ## Install 
-1. Follow the installation as described in [here](https://raw.githubusercontent.com/ppfish45/cert-pdf/master/README.md).
+1. Follow this [installation instruction](https://github.com/ppfish45/cert-pdf).
 2. Clone cert-pdf-viewer.
 ```
 git clone https://github.com/cnchann/cert-pdf-viewer.git
