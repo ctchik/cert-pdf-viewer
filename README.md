@@ -17,12 +17,12 @@ npm start
 ## Usage
 1. Set up backend server with Flask, to make use of cert-pdf API. Both public keys and verification information will be fetched from the server.
 
-2. There are three ways to view pdf-embedded certifile JSON file. PDF document will be displayed at the bottom of the page.
+2. There are three ways to view pdf-embedded certificate JSON file. PDF document will be displayed at the bottom of the page.
 ### Drag and drop file within dropbox
 ### Select from local computer
 ### From Certificate URI
 
 ## Todos
-1. Improve animation in modal display.
+1. Improve animation on modal display.
 2. URI Viewing feature is still in development.
 3. Add responsive design, for re-sizing purposes.
