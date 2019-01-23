@@ -11,6 +11,7 @@ git clone https://github.com/cnchann/cert-pdf-viewer.git
 3. Enter the directory and run client browser locally with npm. Download npm [here](https://nodejs.org/en/download/).
 ```
 cd cert-pdf-viewer
+npm install .
 npm start
 ```
 ## Usage
