@@ -15,22 +15,22 @@ npm install .
 npm start
 ```
 ## Usage
-1. Set up backend server with Flask, to make use of cert-pdf API. Both public keys and verification information will be fetched from the server.
-### Ensure that path to api.py file is from the right directory in server.py
+### Set up backend server with Flask, to make use of cert-pdf API. Both public keys and verification information will be fetched from the server.
+1. Ensure that path to api.py file is from the right directory in server.py
 ```
 import sys
 sys.path.append('../cert-pdf/cert_pdf') #<--------------
 import api
 ```
-### Start the server in terminal
+2. Start the server in terminal
 ```
 py server.py
 ```
 
-2. There are three ways to view pdf-embedded certificate JSON file. PDF document will be displayed at the bottom of the page.
-### Drag and drop file within dropbox
-### Select from local computer
-### From Certificate URI
+### There are three ways to view pdf-embedded certificate JSON file. PDF document will be displayed at the bottom of the page.
+1. Drag and drop file within dropbox
+2. Select from local computer
+3. From Certificate URI
 
 ## Todos
 1. Improve animation on modal display.
