@@ -30,9 +30,9 @@ py server.py
 ### There are three ways to view pdf-embedded certificate JSON file. PDF document will be displayed at the bottom of the page.
 1. Drag and drop file within dropbox
 2. Select from local computer
-3. From Certificate URI
+3. From Certificate URL
 
 ## Todos
 1. Improve animation on modal display.
-2. URI Viewing feature is still in development.
+2. URL Viewing feature is still in development.
 3. Add responsive design, for re-sizing purposes.
