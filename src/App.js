@@ -2,10 +2,7 @@ import React, { Component } from 'react';
 import DropBar from './DropBar'
 import './App.css';
 import Keys from './DisplayKeys';
-import pdfFile from './sample.pdf';
 import PDF from 'react-pdf-js';
-import utf8 from 'utf8';
-import base64 from 'js-base64';
 
 class App extends Component {
   state = {
