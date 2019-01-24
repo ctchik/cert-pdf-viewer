@@ -30,7 +30,7 @@ class App extends Component {
     // create the blob object with content-type "application/pdf"               
     var blob = new Blob( [view], { type: "application/pdf" });
     var url = URL.createObjectURL(blob);
-    
+
     this.setState({
       jsonObject:jsonObject,
       extractedPdf:url
@@ -38,14 +38,13 @@ class App extends Component {
   }
 
   render() {
-    console.log(this.state.extractedPdf)
     return (
     <div>
       <h1>HKUST Blockcert Verifier</h1>
       <DropBar updateJson={this.updateState}/>
       <br/>
       <Keys/>
-      {this.state.extractedPdf && <PDF file={this.state.extractedPdf}/>}
+      {this.state.extractedPdf && <div><a href={this.state.extractedPdf} download="certificate.pdf"><button type="button" className="btn btn-primary">Download PDF</button></a><div><PDF file={this.state.extractedPdf}/></div></div>}
     </div>);
   }
 }
