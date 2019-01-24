@@ -13,7 +13,7 @@ class Keys extends React.Component{
             })
         })
     }
-    //keys will store an array of keys
+    //keys stores an array of public keys
     render(){
         if(this.state.keys == null){
             return <div><b>Error, no key is fetched from server.</b></div>
