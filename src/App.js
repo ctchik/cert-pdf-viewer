@@ -41,10 +41,19 @@ class App extends Component {
     return (
     <div>
       <h1>HKUST Blockcert Verifier</h1>
-      <DropBar updateJson={this.updateState}/>
+      <DropBar updateJson={this.updateState} setClick={postFunction => this.handleClick = postFunction}/>
       <br/>
       <Keys/>
-      {this.state.extractedPdf && <div><a href={this.state.extractedPdf} download="certificate.pdf"><button type="button" className="btn btn-primary">Download PDF</button></a><div><PDF file={this.state.extractedPdf}/></div></div>}
+      {this.state.extractedPdf && 
+      <div>
+        <a href={this.state.extractedPdf} download="certificate.pdf">
+          <button type="button" className="btn btn-primary" style={{marginRight:30}}>Download PDF</button>
+        </a>
+        <button type="button" className="btn btn-primary" onClick={() => this.handleClick(this.state.jsonObject)}>Verify Again!</button>
+        <div>
+          <PDF file={this.state.extractedPdf}/>
+        </div>
+      </div>}
     </div>);
   }
 }

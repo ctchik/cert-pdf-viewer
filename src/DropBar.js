@@ -49,6 +49,10 @@ class DropBar extends React.Component{
     };
   }
 
+  componentDidMount() {
+    this.props.setClick(this.postJson);
+  }
+
   toggle = () => {
     this.setState({
       show: !this.state.show
