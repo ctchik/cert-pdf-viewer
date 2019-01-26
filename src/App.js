@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
-import DropBar from './DropBar'
+import DropBar from './DropBar';
 import './App.css';
 import Keys from './DisplayKeys';
-import PDF from 'react-pdf-js';
+import Document from './Document';
 
 class App extends Component {
   state = {
@@ -48,7 +48,7 @@ class App extends Component {
         </a>
         <button type="button" className="btn btn-primary" onClick={() => this.handleClick(this.state.jsonObject)}>Verify Again!</button>
         <div>
-          <PDF file={this.state.extractedPdf}/>
+          <Document pdf={this.state.extractedPdf}/>
         </div>
       </div>}
     </div>);
