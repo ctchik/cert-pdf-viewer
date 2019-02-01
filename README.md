@@ -1,6 +1,6 @@
 # Certificate-PDF-Viewer
 
-This is built on top of PDF embedded blockcerts, allow viewing of certificates in PDF format.
+This is built on top of PDF embedded blockcerts, allow viewing of certificates in PDF format locally.
 
 ## Installation 
 1. Follow this [installation instruction](https://github.com/ppfish45/cert-pdf).
