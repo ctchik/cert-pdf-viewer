@@ -13,7 +13,7 @@ const baseStyle = {
   borderWidth: 2,
   borderColor: '#000',
   borderStyle: 'solid',
-  boxSizing:"border-box"
+  boxSizing:"border-box",
 };
 const activeStyle = {
   borderColor: '#6c6',
