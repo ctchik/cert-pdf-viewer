@@ -2,18 +2,21 @@ import React from 'react';
 import axios from 'axios'
 
 class Keys extends React.Component{
-    state = {
-        keys: null
+    constructor(props){
+        super(props);
+        this.state = {
+            keys:null
+        }
     }
-
     componentDidMount(){
-        axios.get('http://127.0.0.1:5000/keys').then((res)=>{
+        axios.get('http://143.89.2.220:5000/keys').then((res)=>{
+            this.props.updateKeys(res.data)
             this.setState({
                 keys:res.data
             })
         })
     }
-    //keys stores an array of public keys
+    //keys will store an array of keys
     render(){
         if(this.state.keys == null){
             return <div><b>Error, no key is fetched from server.</b></div>

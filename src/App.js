@@ -7,7 +7,14 @@ import Document from './Document';
 class App extends Component {
   state = {
     jsonObject:null,
-    extractedPdf:null
+    extractedPdf:null,
+    keys:null
+  }
+
+  updateKeys = keys => {
+    this.setState({
+      keys:keys
+    })
   }
 
   updateState = (jsonObject) =>{
@@ -38,9 +45,9 @@ class App extends Component {
     return (
     <div>
       <h1>HKUST Blockcert Verifier</h1>
-      <DropBar updateJson={this.updateState} setClick={postFunction => this.handleClick = postFunction}/>
+      <DropBar keys={this.state.keys} updateJson={this.updateState} setClick={postFunction => this.handleClick = postFunction}/>
       <br/>
-      <Keys/>
+      <Keys updateKeys={this.updateKeys}/>
       {this.state.extractedPdf && 
       <div>
         <a href={this.state.extractedPdf} download="certificate.pdf">

@@ -37,14 +37,15 @@ class DropBar extends React.Component{
       issuer: null, 
       certType: null, 
       issuerImage: null,
+      ticket_id:null,
       verification: [
       {name: "transaction is confirmed", passed: false},
       {name: "issued by specific issuer", passed: false},
       {name: "has not been tampered with", passed: false},
-      {name: "has not expired", passed: false},
+      {name: "has not expire", passed: false},
       {name: "has not been revoked", passed: false},
       {name: "issuer authenticity", passed: false},
-      {name: "*OVERALL VALIDATION", passed: false}],
+      {name: "overall", passed: false}],
       formValue: ''
     };
   }
@@ -110,6 +111,13 @@ class DropBar extends React.Component{
     return month;
   }
 
+  checkKey = (key) => {
+    for(let i=0;i<this.props.keys.length;i++)
+      if(key == this.props.keys[i])
+        return true
+    return false
+  }
+
   postJson = async (object) => {
     let issuedDate = object.issuedOn;
     let regEx = /(\d{4})-(\d{2})-(\d{2})/
@@ -123,10 +131,26 @@ class DropBar extends React.Component{
       issuerImage: object.badge.issuer.image,
       certType: object.badge.name,
     })
-    await axios.post("http://127.0.0.1:5000/postjson", object).then((res)=>{
-      this.setState(prevState => ({
-        verification: prevState.verification.map((obj, i) => ((obj.name === (res.data[i]).name) ? Object.assign(obj, {passed: res.data[i].passed}):obj))
-      }))
+    //change localhost to 
+    
+    await axios.post("http://143.89.2.220:5000/postjson", object).then((res)=>{ 
+      axios.get(`https://chain.so/api/v2/get_tx/BTC/167c8455396823bfaca11ae5a4289ffab29d406fde0092a8922b038895d4b81b?fbclid=IwAR2Lub0SZ35dt83aYL3-_Rbd_sZZTTvrJBBbXu1vRu__1Rp5QfMT2Hj7t6o`).then(sec_res => {
+        let check_key = this.checkKey(sec_res.data.data.inputs['0'].address)
+        let ver = [
+        {name: "transaction is confirmed", passed: sec_res.data.data['confirmations']>0},
+        {name: "issued by specific issuer", passed: check_key},
+        {name: "has not been tampered with", passed: res.data[1].passed},
+        {name: "has not expire", passed: res.data[2].passed},
+        {name: "has not been revoked", passed: res.data[3].passed},
+        {name: "issuer authenticity", passed: res.data[4].passed},
+        {name: "overall", passed: (sec_res.data.data['confirmations']>0) && check_key && res.data[1].passed && res.data[2].passed && res.data[3].passed && res.data[4].passed}] 
+        this.setState(prevState => ({
+          ticket_id:res.data[0].tx_id,
+          verification: prevState.verification.map((obj,index) => ((obj.name === (ver[index]).name) ? Object.assign(obj, {passed: ver[index].passed}):obj))    
+              }
+          )
+      )
+    })
     }
     )
     this.toggle();
@@ -169,6 +193,7 @@ class DropBar extends React.Component{
 	render(){
     let tick = "\u2713";
     let cross = "\u2716";
+    console.log(this.state)
     return(<div><Dropzone accept="application/json" disableClick={true} onDrop={this.onDrop}>
       {({ getRootProps, getInputProps, isDragActive, isDragReject}) => {
         let styles = {...baseStyle}
