@@ -34,5 +34,5 @@ py server.py
 
 ## Todos
 1. Improve animation on modal display.
-2. URL Viewing feature is still in development.
+2. ~~URL Viewing feature is still in development.~~
 3. Add responsive design, for re-sizing purposes.
