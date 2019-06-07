@@ -2,7 +2,7 @@ import React from 'react';
 import Dropzone from 'react-dropzone';
 import axios from 'axios';
 import style from './DropBar.module.css';
-import { Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
+import { Tooltip, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
 
 const baseStyle = {
   display:"flex",
@@ -28,6 +28,7 @@ class DropBar extends React.Component{
     super(props);
     this.state = {
       show: false,
+      tooltipOpen:false,
       name: null,
       issueDay: null,
       issueMonth: null,
@@ -57,6 +58,13 @@ class DropBar extends React.Component{
     this.setState({
       show: !this.state.show
     });
+  }
+
+  toggleTooltip = () =>{
+    this.setState({
+      tooltipOpen: !this.state.tooltipOpen
+    });
+  
   }
 
   handleVerify = () => {
@@ -115,7 +123,6 @@ class DropBar extends React.Component{
       if(key === this.props.keys[i]){
         return true;
       }
-      console.log(key, this.props.keys[i]);
     }
     return false
   }
@@ -154,7 +161,7 @@ class DropBar extends React.Component{
       return 'html';
     }
     else{
-      return 'pdf'; //for testing old certificates.
+      return 'none'; //for testing old certificates.
     }
   }
   postJson = async (object) => {
@@ -175,6 +182,7 @@ class DropBar extends React.Component{
         issuer: object.badge.issuer.name, 
         issuerImage: object.badge.issuer.image,
         certType: object.badge.name,
+        ticket_id: (object.signature.anchors[0]).sourceId,
         fileType: fileType
       })
     }
@@ -188,10 +196,10 @@ class DropBar extends React.Component{
     }
     try{
         //change localhost to http://143.89.2.220:5000/postjson
-        await axios.post("http://127.0.0.1:5000/postjson", object).then(async (res)=>{ 
+        await axios.post("http://143.89.2.220:5000/postjson", object).then(async (res)=>{ 
           
           //need to change the ticket number
-          await axios.get(`https://chain.so/api/v2/get_tx/BTC/167c8455396823bfaca11ae5a4289ffab29d406fde0092a8922b038895d4b81b?fbclid=IwAR2Lub0SZ35dt83aYL3-_Rbd_sZZTTvrJBBbXu1vRu__1Rp5QfMT2Hj7t6o`).then(sec_res => {
+          await axios.get(`https://chain.so/api/v2/get_tx/BTC/${this.state.ticket_id}`).then(sec_res => {
           let check_key = this.checkKey(sec_res.data.data.inputs['0'].address)
           
           let ver = [
@@ -276,13 +284,20 @@ class DropBar extends React.Component{
     })
   }
 
-  handleNewWindow = (url) => {
+  handleNewWindow = (blob) => {
     /**
      * This function is not used yet.
      * Another implemention is to use <a> and style it as a button.
      */
-    let win = window.open(url,'blank');
-    win.focus();
+    let newWindow = window.open('/');
+    newWindow.onload = () => {
+      newWindow.location = blob;
+    }
+  }
+
+  handleMouseOver = () => {
+    console.log('test');
+    return <p>Make sure that Adblock is turned off.</p>
   }
 	render(){
     let tick = "\u2713";
@@ -335,11 +350,18 @@ class DropBar extends React.Component{
       </ModalBody>
       <ModalFooter>
       {(this.state.fileType === 'pdf' || this.state.verification[6].passed === false) && <button className="btn btn-primary" onClick={this.toggle}>Return</button>}
-      {this.state.fileType === 'html' && this.state.verification[6].passed === true && <a className="btn btn-primary" href={this.props.contentUrl} download="certificate.html">View Certificate</a>}
-      {this.state.fileType === 'html' && this.state.verification[6].passed === true && <button className="btn btn-secondary" onClick={this.toggle}>Return</button>}
-      {//Not possible to open html file without downloading. 
-       //this.state.fileType === 'html' && this.state.verification[6].passed === true && <a className="btn btn-primary" href={this.props.contentUrl} target="_blank" rel="noopener">View Certificate</a>
+      {this.state.fileType === 'html' && this.state.verification[6].passed === true && <a className="btn btn-secondary" href={this.props.contentUrl} download="certificate.html">Download</a>}
+      {
+      //this.state.fileType === 'html' && this.state.verification[6].passed === true && <button className="btn btn-primary" onClick={this.handleNewWindow}>View Certificate</button>
+      this.state.fileType === 'html' && this.state.verification[6].passed === true && 
+      <a id="viewButton" href={this.props.contentUrl} target="_blank" rel="noopener">
+        <button className="btn btn-secondary" >View Certificate</button>
+        <Tooltip placement="bottom" isOpen={this.state.tooltipOpen} target="viewButton" toggle={this.toggleTooltip}>
+      Ensure Adblock is turned off!
+      </Tooltip>
+      </a>
       }
+      {this.state.fileType === 'html' && this.state.verification[6].passed === true && <button className="btn btn-primary" onClick={this.toggle}>Return</button>}
       </ModalFooter>
     </Modal>  
     </div>)

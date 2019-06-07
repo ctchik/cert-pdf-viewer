@@ -13,7 +13,7 @@ class Keys extends React.Component{
     }
     componentDidMount(){
         try{
-            axios.get('http://127.0.0.1:5000/keys').then((res)=>{
+            axios.get('http://143.89.2.220:5000/keys').then((res)=>{
                 this.props.updateKeys(res.data)
                 this.setState({
                     keys:res.data

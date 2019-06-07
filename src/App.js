@@ -58,15 +58,21 @@ class App extends Component {
             view[i] = binary.charCodeAt(i);
         }
 
-        // create the blob object with content-type "application/pdf"               
-        var blob = new Blob( [view], { type: "application/pdf" });
+        // create the blob object with content-type "application/pdf"  
+        if(this.state.fileType === "pdf"){
+          console.log('pdf')
+          var blob = new Blob( [view], { type: "application/pdf" });
+        }
+        else{
+          console.log('html')
+          var blob = new Blob([view], {type:"text/html"});
+        }
         var url = URL.createObjectURL(blob);
         this.setState({
           jsonObject:jsonObject,
           extractedContent:url,
           fileType: fileType
         })
-        console.log(url);
     }catch(e){
       if(this.state.error == null){
         this.setError("Unexpected Error: Failed to extract Content.");
