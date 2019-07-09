@@ -1,3 +1,23 @@
+/*
+Not sure what is overwriting the css properties but, important does the trick.
+*/
+@media (max-width:600px){
+  .boxContainer{
+    height:200px !important;
+  }
+  .verifyBtn{
+    width:100%;
+  }
+  .input{
+    width:100% !important;
+  }
+} 
+
+
+.boxContainer{
+  height:170px;
+}
+
 .headerContent{
     padding-left:15px;
 }
@@ -27,6 +47,7 @@
     position: absolute;
     bottom:3px;
     left:10px;
+    font-size:0.95em;
 }
 
 .bodyWrapper{

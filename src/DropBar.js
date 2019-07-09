@@ -2,13 +2,11 @@ import React from 'react';
 import Dropzone from 'react-dropzone';
 import axios from 'axios';
 import style from './DropBar.module.css';
-import { Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
+import { Tooltip, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
 
 const baseStyle = {
   display:"flex",
   justifyContent:"center",
-  height: 170,
-  minWidth:400,
   position:"relative",
   borderWidth: 2,
   borderColor: '#000',
@@ -30,6 +28,7 @@ class DropBar extends React.Component{
     super(props);
     this.state = {
       show: false,
+      tooltipOpen:false,
       name: null,
       issueDay: null,
       issueMonth: null,
@@ -38,11 +37,12 @@ class DropBar extends React.Component{
       certType: null, 
       issuerImage: null,
       ticket_id:null,
+      fileType:null,
       verification: [
       {name: "transaction is confirmed", passed: false},
       {name: "issued by specific issuer", passed: false},
       {name: "has not been tampered with", passed: false},
-      {name: "has not expire", passed: false},
+      {name: "has not expired", passed: false},
       {name: "has not been revoked", passed: false},
       {name: "issuer authenticity", passed: false},
       {name: "overall", passed: false}],
@@ -58,6 +58,13 @@ class DropBar extends React.Component{
     this.setState({
       show: !this.state.show
     });
+  }
+
+  toggleTooltip = () =>{
+    this.setState({
+      tooltipOpen: !this.state.tooltipOpen
+    });
+  
   }
 
   handleVerify = () => {
@@ -112,56 +119,133 @@ class DropBar extends React.Component{
   }
 
   checkKey = (key) => {
-    for(let i=0;i<this.props.keys.length;i++)
-      if(key == this.props.keys[i])
-        return true
+    for(let i=0;i<this.props.keys.length;i++){
+      if(key === this.props.keys[i]){
+        return true;
+      }
+    }
     return false
   }
 
-  postJson = async (object) => {
-    let issuedDate = object.issuedOn;
-    let regEx = /(\d{4})-(\d{2})-(\d{2})/
-    let match = regEx.exec(issuedDate);
+  clearState = () => {
     this.setState({
-      name: object.recipientProfile.name,
-      issueDay: match[3],
-      issueMonth: this.changeMonth(match[2]),
-      issueYear: match[1],
-      issuer: object.badge.issuer.name, 
-      issuerImage: object.badge.issuer.image,
-      certType: object.badge.name,
+      name: null,
+      issueDay: null,
+      issueMonth: null,
+      issueYear: null,
+      issuer: null, 
+      certType: null, 
+      issuerImage: null,
+      ticket_id:null,
+      fileType:null,
+      verification: [
+      {name: "transaction is confirmed", passed: false},
+      {name: "issued by specific issuer", passed: false},
+      {name: "has not been tampered with", passed: false},
+      {name: "has not expired", passed: false},
+      {name: "has not been revoked", passed: false},
+      {name: "issuer authenticity", passed: false},
+      {name: "overall", passed: false}]
     })
-    //change localhost to 
-    
-    await axios.post("http://143.89.2.220:5000/postjson", object).then((res)=>{ 
-      axios.get(`https://chain.so/api/v2/get_tx/BTC/167c8455396823bfaca11ae5a4289ffab29d406fde0092a8922b038895d4b81b?fbclid=IwAR2Lub0SZ35dt83aYL3-_Rbd_sZZTTvrJBBbXu1vRu__1Rp5QfMT2Hj7t6o`).then(sec_res => {
-        let check_key = this.checkKey(sec_res.data.data.inputs['0'].address)
-        let ver = [
-        {name: "transaction is confirmed", passed: sec_res.data.data['confirmations']>0},
-        {name: "issued by specific issuer", passed: check_key},
-        {name: "has not been tampered with", passed: res.data[1].passed},
-        {name: "has not expire", passed: res.data[2].passed},
-        {name: "has not been revoked", passed: res.data[3].passed},
-        {name: "issuer authenticity", passed: res.data[4].passed},
-        {name: "overall", passed: (sec_res.data.data['confirmations']>0) && check_key && res.data[1].passed && res.data[2].passed && res.data[3].passed && res.data[4].passed}] 
-        this.setState(prevState => ({
-          ticket_id:res.data[0].tx_id,
-          verification: prevState.verification.map((obj,index) => ((obj.name === (ver[index]).name) ? Object.assign(obj, {passed: ver[index].passed}):obj))    
-              }
-          )
-      )
-    })
+  }
+
+  checkFileType = (object) => {
+    let regPdf = /.*.pdf/
+    let regHtml = /.*.html/ 
+    let pdf = regPdf.test(object.filename);
+    let html = regHtml.test(object.filename);
+    if(pdf === true){
+      return 'pdf';
     }
-    )
+    else if(html === true){
+      return 'html';
+    }
+    else{
+      return 'none'; //for testing old certificates.
+    }
+  }
+  postJson = async (object) => {
+    try{
+      let fileType = this.checkFileType(object);
+      if(fileType === 'none'){
+        //error handling later
+        throw "Unexpected error: Invalid file type detected.";
+      }
+      let issuedDate = object.issuedOn;
+      let regEx = /(\d{4})-(\d{2})-(\d{2})/
+      let match = regEx.exec(issuedDate);
+      this.setState({
+        name: object.recipientProfile.name,
+        issueDay: match[3],
+        issueMonth: this.changeMonth(match[2]),
+        issueYear: match[1],
+        issuer: object.badge.issuer.name, 
+        issuerImage: object.badge.issuer.image,
+        certType: object.badge.name,
+        ticket_id: (object.signature.anchors[0]).sourceId,
+        fileType: fileType
+      })
+    }
+    catch(e){
+      if(e === null){
+        this.props.setError("Unexpected Error: Missing JSON file.");
+        return;
+      }
+      this.props.setError(e);
+      
+    }
+    try{
+        //change localhost to http://143.89.2.220:5000/postjson
+        await axios.post("http://143.89.2.220:5000/postjson", object).then(async (res)=>{ 
+          
+          //need to change the ticket number
+          await axios.get(`https://chain.so/api/v2/get_tx/BTC/${this.state.ticket_id}`).then(sec_res => {
+          let check_key = this.checkKey(sec_res.data.data.inputs['0'].address)
+          
+          let ver = [
+          {name: "transaction is confirmed", passed: sec_res.data.data['confirmations']>0},
+          {name: "issued by specific issuer", passed: check_key},
+          {name: "has not been tampered with", passed: res.data[1].passed},
+          {name: "has not expired", passed: res.data[2].passed},
+          {name: "has not been revoked", passed: res.data[3].passed},
+          {name: "issuer authenticity", passed: res.data[4].passed},
+          {name: "overall", passed: (sec_res.data.data['confirmations']>0) && check_key && res.data[1].passed && res.data[2].passed && res.data[3].passed && res.data[4].passed}] 
+          this.setState(prevState => ({
+            ticket_id:res.data[0].tx_id,
+            verification: prevState.verification.map((obj,index) => ((obj.name === (ver[index]).name) ? Object.assign(obj, {passed: ver[index].passed}):obj))    
+                }
+            )
+          )
+          this.props.updateStatus(this.state.verification);
+          console.log("done")
+        })
+        }
+        )
+      }catch(e){
+        if(this.state.error === null){
+          this.props.setError("Unexpected Error: Failed to verify through chain.so.");
+          return;
+        }
+        console.log(e);
+        return;
+      }
     this.toggle();
   }
 
   onDrop = (acceptedFiles) => {
     const reader = new FileReader();
     reader.onload = async (e) => {
-      let jsonObject = JSON.parse(e.target.result); 
-      this.postJson(jsonObject);
-      this.props.updateJson(jsonObject);
+      try{
+        let jsonObject = JSON.parse(e.target.result);
+        this.clearState();
+        this.props.clearState(); 
+        this.postJson(jsonObject);
+        this.props.updateJson(jsonObject);
+      }
+      catch(e){
+        this.props.setError("Unexpected Error: Invalid JSON file.");
+        return;
+      }
     }
     reader.readAsText(acceptedFiles[0]);
   }
@@ -169,9 +253,17 @@ class DropBar extends React.Component{
   handleFileChange = (e) => {
     const reader = new FileReader();
     reader.onload = async (e) => {
-      let jsonObject = JSON.parse(e.target.result); 
-      this.postJson(jsonObject);
-      this.props.updateJson(jsonObject);
+      try{
+        let jsonObject = JSON.parse(e.target.result); 
+        this.clearState();
+        this.props.clearState(); 
+        this.postJson(jsonObject);
+        this.props.updateJson(jsonObject);
+      }
+      catch(e){
+        this.props.setError("Unexpected Error: Invalid JSON file.");
+        return;
+      }
     }
     reader.readAsText(e.target.files[0]);
   }
@@ -185,15 +277,31 @@ class DropBar extends React.Component{
   handleSubmit = (e) => {
     e.preventDefault();
     axios.get(this.state.formValue).then(res => {
+      this.clearState();
+      this.props.clearState(); 
       this.postJson(res.data);
       this.props.updateJson(res.data);
     })
   }
 
+  handleNewWindow = (blob) => {
+    /**
+     * This function is not used yet.
+     * Another implemention is to use <a> and style it as a button.
+     */
+    let newWindow = window.open('/');
+    newWindow.onload = () => {
+      newWindow.location = blob;
+    }
+  }
+
+  handleMouseOver = () => {
+    console.log('test');
+    return <p>Make sure that Adblock is turned off.</p>
+  }
 	render(){
     let tick = "\u2713";
     let cross = "\u2716";
-    console.log(this.state)
     return(<div><Dropzone accept="application/json" disableClick={true} onDrop={this.onDrop}>
       {({ getRootProps, getInputProps, isDragActive, isDragReject}) => {
         let styles = {...baseStyle}
@@ -201,11 +309,11 @@ class DropBar extends React.Component{
         styles = isDragReject ? {...styles, ...rejectStyle} : styles
 
         return (
-          <div {...getRootProps()} style={styles}>
+          <div className={style.boxContainer} {...getRootProps()} style={styles}>
             <input {...getInputProps()}/>
             <form className="form-inline" style={{position:"absolute", top:40}} onSubmit={this.handleSubmit}>
-              <input type="text" className="form-control" placeholder="Certificate Url" onChange={this.handleFormChange}/>
-              <button className="btn btn-success" type="submit">Verify</button>
+              <input  type="text" className={`form-control ${style.input}`} placeholder="Certificate Url" onChange={this.handleFormChange}/>
+              <button className={`btn btn-success ${style.verifyBtn}`}  type="submit">Verify</button>
             </form>
             <div className={style.chooseFile}>
             <label style={{textDecoration:"underline", cursor:"pointer"}}>Choose JSON file<input type="file" onChange={this.handleFileChange} style={{display:"none"}}/></label><span>(you can also drag & drop file here)</span>
@@ -241,7 +349,19 @@ class DropBar extends React.Component{
         </dl>
       </ModalBody>
       <ModalFooter>
-        Some logo..
+      {(this.state.fileType === 'pdf' || this.state.verification[6].passed === false) && <button className="btn btn-primary" onClick={this.toggle}>Return</button>}
+      {this.state.fileType === 'html' && this.state.verification[6].passed === true && <a className="btn btn-secondary" href={this.props.contentUrl} download="certificate.html">Download</a>}
+      {
+      //this.state.fileType === 'html' && this.state.verification[6].passed === true && <button className="btn btn-primary" onClick={this.handleNewWindow}>View Certificate</button>
+      this.state.fileType === 'html' && this.state.verification[6].passed === true && 
+      <a id="viewButton" href={this.props.contentUrl} target="_blank" rel="noopener">
+        <button className="btn btn-secondary" >View Certificate</button>
+        <Tooltip placement="bottom" isOpen={this.state.tooltipOpen} target="viewButton" toggle={this.toggleTooltip}>
+      Ensure Adblock is turned off!
+      </Tooltip>
+      </a>
+      }
+      {this.state.fileType === 'html' && this.state.verification[6].passed === true && <button className="btn btn-primary" onClick={this.toggle}>Return</button>}
       </ModalFooter>
     </Modal>  
     </div>)
